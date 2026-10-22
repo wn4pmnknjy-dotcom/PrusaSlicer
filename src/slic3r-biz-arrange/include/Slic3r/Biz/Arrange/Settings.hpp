@@ -9,7 +9,9 @@ namespace Slic3r::Biz::Arrange {
 enum class Strategy
 {
     Overfit,
-    Gravity
+    Gravity,
+    // Raster packing where every translation is a whole number of printer pixels (MSLA).
+    PixelGrid
 };
 
 enum class GeometryHandling
@@ -30,5 +32,16 @@ struct Settings
     std::optional<Domain::BedSegments> bed_segments;
     int scaled_simplification_tolerance{Biz::Algorithms::Scaling::scaled(.2)};
     std::optional<Domain::Vec2d> auxiliary_travel_anchor;
+
+    // Strategy::PixelGrid only.
+    // Size of one printer pixel in mm, item positions are snapped to multiples of it.
+    double unscaled_pixel_width{0.05};
+    double unscaled_pixel_height{0.05};
+    // Coarse search step in mm, the final position is refined pixel by pixel.
+    double unscaled_pixel_search_step{0.5};
+    // Corner of the pixel grid in bed coordinates (mm), (0, 0) if not set.
+    std::optional<Domain::Vec2d> pixel_grid_origin;
+    // Rotate items to their minimum area bounding box before packing.
+    bool pixel_grid_min_footprint{true};
 };
 } // namespace Slic3r::Biz::Arrange

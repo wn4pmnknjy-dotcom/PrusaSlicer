@@ -10,6 +10,7 @@
 #include "Slic3r/Biz/Arrange/Kernels/TMArrangeKernel.hpp"
 #include "Slic3r/Biz/Algorithms/BoundingBox.hpp"
 #include "Slic3r/Biz/Arrange/Packer.hpp"
+#include "Slic3r/Biz/Arrange/PixelGrid.hpp"
 #include "Slic3r/Domain/ModelInstance.hpp"
 #include "Slic3r/Domain/ModelObject.hpp"
 #include "Slic3r/Biz/Algorithms/Optimize/NLoptOptimizer.hpp"
@@ -239,6 +240,14 @@ std::optional<ArrangeResult> arrange(
         for (ArrangeItem& item : items) {
             item.allow_rotations(*bed);
         }
+    }
+
+    const bool has_wipe_tower{std::ranges::any_of(items, [](const ArrangeItem& item) {
+        return item.is_wipe_tower;
+    })};
+    if (settings.strategy == Strategy::PixelGrid && !has_wipe_tower
+        && dynamic_cast<const RectangleBed*>(bed.get()) != nullptr) {
+        return arrange_on_pixel_grid(bed->bounding_box(), items, fixed_items, settings, stop_condition);
     }
 
     std::unique_ptr<Kernels::IKernel> base_kernel;

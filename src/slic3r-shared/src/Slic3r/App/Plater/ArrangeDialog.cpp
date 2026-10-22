@@ -257,6 +257,13 @@ ArrangeDialog::ArrangeDialog(
     m_enable_rotations_toggle->set_checked(settings.allow_rotations);
     rotation_row->emplace_back<Text>(_u8L("Rotations (slow)"));
 
+    auto pixel_grid_row{rotation_geometry_section->emplace_back<Item>()};
+    pixel_grid_row->set_padding({0_fpx, 3_fpx, 0_fpx, 3_fpx});
+    pixel_grid_row->set_gap(10_fpx);
+    m_pixel_grid_toggle = pixel_grid_row->emplace_back<ToggleButton>();
+    m_pixel_grid_toggle->set_checked(settings.strategy == Biz::Arrange::Strategy::PixelGrid);
+    pixel_grid_row->emplace_back<Text>(_u8L("Snap to display pixels (SLA)"));
+
     m_geometry_handling = rotation_geometry_section->emplace_back<Yoga::ComboBox>(
         std::initializer_list{_u8L("Fast geometry"),
                               _u8L("Balanced geometry"),
@@ -371,6 +378,9 @@ Settings ArrangeDialog::get_settings() const
 
     result.auxiliary_travel_anchor = m_auxiliary_travel_anchor;
     result.allow_rotations = m_enable_rotations_toggle->checked();
+    if (m_pixel_grid_toggle->checked()) {
+        result.strategy = Biz::Arrange::Strategy::PixelGrid;
+    }
 
     return result;
 }

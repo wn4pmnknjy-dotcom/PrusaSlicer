@@ -57,6 +57,7 @@ private:
     Yoga::SliderWithInput* m_bed_offset_slider{nullptr};
     Yoga::ComboBox* m_geometry_handling{nullptr};
     Yoga::ToggleButton* m_enable_rotations_toggle{nullptr};
+    Yoga::ToggleButton* m_pixel_grid_toggle{nullptr};
     PivotPicker* m_pivot_picker{nullptr};
     Yoga::Item* m_bed_segments_section{nullptr};
     Yoga::Separator* m_bed_segments_separator{nullptr};
