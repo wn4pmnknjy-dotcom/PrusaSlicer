@@ -30,7 +30,7 @@ jobs:
 
       - name: Restore dependencies
         id: deps-cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: deps/build/destdir
           key: win-deps-${{ hashFiles('deps/**') }}
@@ -47,7 +47,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: deps/build/destdir
-          key: win-deps-${{ hashFiles('deps/**') }}
+          key: ${{ steps.deps-cache.outputs.cache-primary-key }}
 
       - name: Build PrusaSlicer
         shell: cmd
@@ -55,15 +55,20 @@ jobs:
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DSLIC3R_BUILD_TESTS=OFF -DSLIC3R_ENABLE_FORMAT_STEP=OFF -DCMAKE_PREFIX_PATH="%GITHUB_WORKSPACE%/deps/build/destdir/usr/local"
           cmake --build build
 
+      # The application looks for a 'resources' directory next to the executable.
       - name: Package
         shell: pwsh
         run: |
-          cmake --install build --prefix dist
-          Get-ChildItem -Recurse build -Include *.exe,*.dll | Where-Object { $_.FullName -notmatch 'CMakeFiles' } | Copy-Item -Destination dist -Force
-          Get-ChildItem dist
+          $out = "dist/PrusaSlicer"
+          $bin = "build/src/slic3r-app-launcher"
+          New-Item -ItemType Directory -Force $out | Out-Null
+          Copy-Item "$bin/slic3r-app-launcher.exe" "$out/PrusaSlicer.exe"
+          Copy-Item "$bin/*.dll" $out
+          Copy-Item -Recurse resources "$out/resources"
+          Get-ChildItem $out
 
       - uses: actions/upload-artifact@v4
         with:
           name: PrusaSlicer-windows-x64
-          path: dist
+          path: dist/PrusaSlicer
           retention-days: 30
