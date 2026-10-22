@@ -33,7 +33,8 @@ Vec2crd floor_div(const Vec2crd& a, const Vec2crd& b)
 }
 
 // The x range covered by a convex polygon within the horizontal slab [y_lo, y_hi].
-std::optional<std::pair<double, double>> slab_x_range(const Polygon& poly, const double y_lo, const double y_hi)
+std::optional<std::pair<double, double>>
+slab_x_range(const Polygon& poly, const double y_lo, const double y_hi)
 {
     double x_min{std::numeric_limits<double>::max()};
     double x_max{std::numeric_limits<double>::lowest()};
@@ -70,7 +71,8 @@ std::vector<double> candidate_rotations(const ArrangeItem& item, const Settings&
     std::vector<double> result;
     if (settings.pixel_grid_min_footprint) {
         const double min_bb_rotation{
-            MinAreaBoundigBox{item.movable_shape().convex_hull(), MinAreaBoundigBox::pcConvex}.angle_to_X()
+            MinAreaBoundigBox{item.movable_shape().convex_hull(), MinAreaBoundigBox::pcConvex}
+                .angle_to_X()
         };
         for (int quarter{}; quarter < 4; ++quarter) {
             result.push_back(min_bb_rotation + quarter * std::numbers::pi / 2.);
@@ -99,7 +101,8 @@ std::vector<int> search_positions(const int last, const int stride)
 
 // Finds the lowest, then leftmost free spot on a coarse stride and then slides
 // the mask pixel by pixel down and left until it touches something.
-std::optional<Vec2crd> find_lowest_left(const PixelMask& occupancy, const PixelMask& mask, const int stride)
+std::optional<Vec2crd>
+find_lowest_left(const PixelMask& occupancy, const PixelMask& mask, const int stride)
 {
     const int last_x{occupancy.width() - mask.width()};
     const int last_y{occupancy.height() - mask.height()};
@@ -142,7 +145,12 @@ BoundingBox2crd packed_extents(const std::vector<ArrangeItem>& items)
 }
 
 // Moves the whole pile by whole pixels so that it sits at the requested pivot of the bed.
-void align_pile_to_pixels(std::vector<ArrangeItem>& items, const BoundingBox2crd& usable, const PivotPoint pivot, const Vec2crd& pitch)
+void align_pile_to_pixels(
+    std::vector<ArrangeItem>& items,
+    const BoundingBox2crd& usable,
+    const PivotPoint pivot,
+    const Vec2crd& pitch
+)
 {
     if (items.empty()) {
         return;
@@ -151,11 +159,20 @@ void align_pile_to_pixels(std::vector<ArrangeItem>& items, const BoundingBox2crd
     const Vec2crd free_space{(usable.max - usable.min) - (pile.max - pile.min)};
     Vec2crd target{usable.min};
     switch (pivot) {
-    case PivotPoint::Center: target += free_space / 2; break;
-    case PivotPoint::BottomLeft: break;
-    case PivotPoint::BottomRight: target.x() += free_space.x(); break;
-    case PivotPoint::TopLeft: target.y() += free_space.y(); break;
-    case PivotPoint::TopRight: target += free_space; break;
+    case PivotPoint::Center:
+        target += free_space / 2;
+        break;
+    case PivotPoint::BottomLeft:
+        break;
+    case PivotPoint::BottomRight:
+        target.x() += free_space.x();
+        break;
+    case PivotPoint::TopLeft:
+        target.y() += free_space.y();
+        break;
+    case PivotPoint::TopRight:
+        target += free_space;
+        break;
     }
     Vec2crd shift{target - pile.min};
     shift = floor_div(shift, pitch).cwiseProduct(pitch);
@@ -165,18 +182,23 @@ void align_pile_to_pixels(std::vector<ArrangeItem>& items, const BoundingBox2crd
 }
 } // namespace
 
-PixelMask::PixelMask(const Vec2crd& origin, const Vec2crd& pitch, const int width, const int height)
-    : m_origin{origin}
-    , m_pitch{pitch}
-    , m_width{std::max(width, 0)}
-    , m_height{std::max(height, 0)}
-    , m_words{(m_width + bits_per_word - 1) / bits_per_word}
-    , m_bits(std::size_t(m_words) * m_height, 0)
+PixelMask::
+    PixelMask(const Vec2crd& origin, const Vec2crd& pitch, const int width, const int height) :
+    m_origin{origin},
+    m_pitch{pitch},
+    m_width{std::max(width, 0)},
+    m_height{std::max(height, 0)},
+    m_words{(m_width + bits_per_word - 1) / bits_per_word},
+    m_bits(std::size_t(m_words) * m_height, 0)
 {
     ASSERT(pitch.x() > 0 && pitch.y() > 0);
 }
 
-PixelMask PixelMask::rasterize_convex(const Polygons& convex_polygons, const Vec2crd& pitch, const Vec2crd& grid_origin)
+PixelMask PixelMask::rasterize_convex(
+    const Polygons& convex_polygons,
+    const Vec2crd& pitch,
+    const Vec2crd& grid_origin
+)
 {
     Vec2crd lo{Vec2crd::Constant(std::numeric_limits<coord_t>::max())};
     Vec2crd hi{Vec2crd::Constant(std::numeric_limits<coord_t>::lowest())};
@@ -245,15 +267,19 @@ void PixelMask::set_span(const int y, int x_from, int x_to)
     x_from = std::max(x_from, 0);
     x_to   = std::min(x_to, m_width - 1);
     for (int x{x_from}; x <= x_to; ++x) {
-        m_bits[std::size_t(y) * m_words + x / bits_per_word] |= std::uint64_t{1} << (x % bits_per_word);
+        m_bits[std::size_t(y) * m_words + x / bits_per_word] |= std::uint64_t{1}
+            << (x % bits_per_word);
     }
 }
 
 std::size_t PixelMask::count() const
 {
-    return std::accumulate(m_bits.begin(), m_bits.end(), std::size_t{0}, [](std::size_t s, std::uint64_t w) {
-        return s + std::popcount(w);
-    });
+    return std::accumulate(
+        m_bits.begin(),
+        m_bits.end(),
+        std::size_t{0},
+        [](std::size_t s, std::uint64_t w) { return s + std::popcount(w); }
+    );
 }
 
 bool PixelMask::fits(const PixelMask& mask, const int x, const int y) const
@@ -273,8 +299,10 @@ bool PixelMask::fits(const PixelMask& mask, const int x, const int y) const
             if ((word(y + row, target) & (bits << shift)) != 0) {
                 return false;
             }
-            if (shift != 0 && target + 1 < m_words
-                && (word(y + row, target + 1) & (bits >> (bits_per_word - shift))) != 0) {
+            if (shift != 0
+                && target + 1 < m_words
+                && (word(y + row, target + 1) & (bits >> (bits_per_word - shift))) != 0)
+            {
                 return false;
             }
         }
@@ -305,12 +333,18 @@ std::optional<ArrangeResult> arrange_on_pixel_grid(
         std::max<coord_t>(scaled(settings.unscaled_pixel_width), 1),
         std::max<coord_t>(scaled(settings.unscaled_pixel_height), 1)
     };
-    const double largest_pixel{std::max(settings.unscaled_pixel_width, settings.unscaled_pixel_height)};
-    const int stride{std::max(1, int(std::lround(settings.unscaled_pixel_search_step / largest_pixel)))};
+    const double largest_pixel{
+        std::max(settings.unscaled_pixel_width, settings.unscaled_pixel_height)
+    };
+    const int stride{
+        std::max(1, int(std::lround(settings.unscaled_pixel_search_step / largest_pixel)))
+    };
 
     // The pixel grid is anchored at pixel_grid_origin (the corner of the printer's
     // display), the bed contour itself is usually shrunk by the spacing and safety offsets.
-    const Vec2crd anchor{settings.pixel_grid_origin ? scaled(*settings.pixel_grid_origin) : Vec2crd{0, 0}};
+    const Vec2crd anchor{
+        settings.pixel_grid_origin ? scaled(*settings.pixel_grid_origin) : Vec2crd{0, 0}
+    };
     const Vec2crd first_cell{floor_div(bed.min - anchor, pitch)};
     const Vec2crd last_cell{floor_div(bed.max - anchor, pitch)};
     const Vec2crd grid_origin{anchor + first_cell.cwiseProduct(pitch)};
@@ -334,21 +368,29 @@ std::optional<ArrangeResult> arrange_on_pixel_grid(
             }
         }
     }
-    const auto cell_of{[&](const PixelMask& mask) {
-        return Vec2crd{(mask.origin() - grid_origin).cwiseQuotient(pitch)};
-    }};
+    const auto cell_of{
+        [&](const PixelMask& mask)
+        { return Vec2crd{(mask.origin() - grid_origin).cwiseQuotient(pitch)}; }
+    };
 
     for (const ArrangeItem& fixed : fixed_items) {
-        const PixelMask mask{PixelMask::rasterize_convex(fixed.fixed_shape().transformed_outline(), pitch, grid_origin)};
+        const PixelMask mask{PixelMask::rasterize_convex(
+            fixed.fixed_shape().transformed_outline(),
+            pitch,
+            grid_origin
+        )};
         const Vec2crd cell{cell_of(mask)};
         occupancy.stamp(mask, int(cell.x()), int(cell.y()));
     }
 
     std::vector<std::size_t> order(items.size());
     std::iota(order.begin(), order.end(), 0);
-    std::stable_sort(order.begin(), order.end(), [&](std::size_t a, std::size_t b) {
-        return items[a].fixed_shape().area_unscaled() > items[b].fixed_shape().area_unscaled();
-    });
+    std::stable_sort(
+        order.begin(),
+        order.end(),
+        [&](std::size_t a, std::size_t b)
+        { return items[a].fixed_shape().area_unscaled() > items[b].fixed_shape().area_unscaled(); }
+    );
 
     struct Spot
     {
@@ -372,21 +414,36 @@ std::optional<ArrangeResult> arrange_on_pixel_grid(
         for (const double rotation : candidate_rotations(item, settings)) {
             item.set_rotation(base_rotation + rotation);
             item.set_translation(base_translation);
-            const PixelMask movable{
-                PixelMask::rasterize_convex(item.movable_shape().transformed_outline(), pitch, grid_origin)
-            };
+            const PixelMask movable{PixelMask::rasterize_convex(
+                item.movable_shape().transformed_outline(),
+                pitch,
+                grid_origin
+            )};
             const std::optional<Vec2crd> cell{find_lowest_left(occupancy, movable, stride)};
             if (!cell) {
                 continue;
             }
             // Prefer the spot that keeps the pile lowest, then narrowest.
-            const std::pair<coord_t, coord_t> key{cell->y() + movable.height(), cell->x() + movable.width()};
+            const std::pair<coord_t, coord_t>
+                key{cell->y() + movable.height(), cell->x() + movable.width()};
             if (best && best->key <= key) {
                 continue;
             }
-            const Vec2crd translation{base_translation + grid_origin + cell->cwiseProduct(pitch) - movable.origin()};
-            PixelMask fixed_mask{PixelMask::rasterize_convex(item.fixed_shape().transformed_outline(), pitch, grid_origin)};
-            best = Spot{key, rotation, *cell + cell_of(fixed_mask) - cell_of(movable), std::move(fixed_mask), translation};
+            const Vec2crd translation{
+                base_translation + grid_origin + cell->cwiseProduct(pitch) - movable.origin()
+            };
+            PixelMask fixed_mask{PixelMask::rasterize_convex(
+                item.fixed_shape().transformed_outline(),
+                pitch,
+                grid_origin
+            )};
+            best = Spot{
+                key,
+                rotation,
+                *cell + cell_of(fixed_mask) - cell_of(movable),
+                std::move(fixed_mask),
+                translation
+            };
         }
 
         if (!best) {
@@ -402,7 +459,12 @@ std::optional<ArrangeResult> arrange_on_pixel_grid(
     }
 
     if (fixed_items.empty()) {
-        align_pile_to_pixels(result.packed, bed, settings.bed_pivot_point.value_or(PivotPoint::Center), pitch);
+        align_pile_to_pixels(
+            result.packed,
+            bed,
+            settings.bed_pivot_point.value_or(PivotPoint::Center),
+            pitch
+        );
     }
     return result;
 }

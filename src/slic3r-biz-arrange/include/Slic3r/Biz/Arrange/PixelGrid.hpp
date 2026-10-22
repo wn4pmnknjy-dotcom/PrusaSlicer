@@ -24,10 +24,25 @@ public:
         const Domain::Vec2crd& grid_origin
     );
 
-    int width() const { return m_width; }
-    int height() const { return m_height; }
-    const Domain::Vec2crd& origin() const { return m_origin; }
-    const Domain::Vec2crd& pitch() const { return m_pitch; }
+    int width() const
+    {
+        return m_width;
+    }
+
+    int height() const
+    {
+        return m_height;
+    }
+
+    const Domain::Vec2crd& origin() const
+    {
+        return m_origin;
+    }
+
+    const Domain::Vec2crd& pitch() const
+    {
+        return m_pitch;
+    }
 
     bool get(int x, int y) const;
     void set(int x, int y);
@@ -40,7 +55,10 @@ public:
     void stamp(const PixelMask& mask, int x, int y);
 
 private:
-    std::uint64_t word(int y, int w) const { return m_bits[std::size_t(y) * m_words + w]; }
+    std::uint64_t word(int y, int w) const
+    {
+        return m_bits[std::size_t(y) * m_words + w];
+    }
 
     Domain::Vec2crd m_origin{0, 0};
     Domain::Vec2crd m_pitch{1, 1};

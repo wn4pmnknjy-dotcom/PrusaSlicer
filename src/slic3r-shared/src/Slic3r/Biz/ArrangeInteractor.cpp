@@ -411,7 +411,8 @@ std::optional<Vec2d> get_display_pixel_size(const ConfigPackSLA& config)
     int pixels_x{items.opt("display_pixels_x").get<int>()};
     int pixels_y{items.opt("display_pixels_y").get<int>()};
     if (items.opt("display_orientation").get<Domain::SLADisplayOrientation>()
-        == Domain::SLADisplayOrientation::sladoPortrait) {
+        == Domain::SLADisplayOrientation::sladoPortrait)
+    {
         std::swap(width, height);
         std::swap(pixels_x, pixels_y);
     }
@@ -573,7 +574,8 @@ std::optional<PackingResult> pack_to_bed(
                 // Anchor the pixel grid at the corner of the unshrunk bed, where the display starts.
                 settings.unscaled_pixel_width  = arrange_bed.pixel_size->x();
                 settings.unscaled_pixel_height = arrange_bed.pixel_size->y();
-                settings.pixel_grid_origin   = BB::construct(arrange_bed.bed_instance->bed.get().contour()).min;
+                settings.pixel_grid_origin =
+                    BB::construct(arrange_bed.bed_instance->bed.get().contour()).min;
             } else {
                 settings.strategy = Arrange::Strategy::Overfit;
             }

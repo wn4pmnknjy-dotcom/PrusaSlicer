@@ -242,12 +242,20 @@ std::optional<ArrangeResult> arrange(
         }
     }
 
-    const bool has_wipe_tower{std::ranges::any_of(items, [](const ArrangeItem& item) {
-        return item.is_wipe_tower;
-    })};
-    if (settings.strategy == Strategy::PixelGrid && !has_wipe_tower
-        && dynamic_cast<const RectangleBed*>(bed.get()) != nullptr) {
-        return arrange_on_pixel_grid(bed->bounding_box(), items, fixed_items, settings, stop_condition);
+    const bool has_wipe_tower{
+        std::ranges::any_of(items, [](const ArrangeItem& item) { return item.is_wipe_tower; })
+    };
+    if (settings.strategy == Strategy::PixelGrid
+        && !has_wipe_tower
+        && dynamic_cast<const RectangleBed*>(bed.get()) != nullptr)
+    {
+        return arrange_on_pixel_grid(
+            bed->bounding_box(),
+            items,
+            fixed_items,
+            settings,
+            stop_condition
+        );
     }
 
     std::unique_ptr<Kernels::IKernel> base_kernel;

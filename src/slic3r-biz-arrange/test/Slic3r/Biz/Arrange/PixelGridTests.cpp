@@ -34,7 +34,8 @@ using Slic3r::Domain::Vec2d;
 namespace {
 const auto never_stop{[]() { return false; }};
 
-InputShape rectangle(const double w, const double h, const Vec2d& at = {0., 0.}, const double rotation = 0.)
+InputShape
+rectangle(const double w, const double h, const Vec2d& at = {0., 0.}, const double rotation = 0.)
 {
     ExPolygon poly{
         scaled(Vec2d{0., 0.}),
@@ -66,7 +67,7 @@ InputShape l_shape(const double size, const double arm)
 Settings pixel_settings(const double pitch)
 {
     Settings settings;
-    settings.strategy             = Strategy::PixelGrid;
+    settings.strategy              = Strategy::PixelGrid;
     settings.unscaled_pixel_width  = pitch;
     settings.unscaled_pixel_height = pitch;
     return settings;
@@ -81,8 +82,14 @@ bool is_collision_free(const std::vector<ArrangeItem>& items)
 {
     for (std::size_t i{}; i < items.size(); ++i) {
         for (std::size_t j{i + 1}; j < items.size(); ++j) {
-            const Polygons a{offset(items[i].fixed_shape().transformed_outline(), -float(Slic3r::Domain::SCALED_EPSILON))};
-            const Polygons b{offset(items[j].fixed_shape().transformed_outline(), -float(Slic3r::Domain::SCALED_EPSILON))};
+            const Polygons a{offset(
+                items[i].fixed_shape().transformed_outline(),
+                -float(Slic3r::Domain::SCALED_EPSILON)
+            )};
+            const Polygons b{offset(
+                items[j].fixed_shape().transformed_outline(),
+                -float(Slic3r::Domain::SCALED_EPSILON)
+            )};
             if (!intersection(a, b).empty()) {
                 return false;
             }
@@ -106,13 +113,17 @@ TEST_CASE("Convex rasterization covers the whole polygon", "[Arrange][PixelGrid]
 {
     const coord_t pitch{scaled(0.5)};
     const Vec2crd pitch2{pitch, pitch};
-    const Polygon triangle{scaled(Vec2d{0.2, 0.3}), scaled(Vec2d{9.7, 1.1}), scaled(Vec2d{4.0, 8.9})};
+    const Polygon
+        triangle{scaled(Vec2d{0.2, 0.3}), scaled(Vec2d{9.7, 1.1}), scaled(Vec2d{4.0, 8.9})};
     const PixelMask mask{PixelMask::rasterize_convex({triangle}, pitch2, Vec2crd{0, 0})};
 
     CHECK(mask.origin() == Vec2crd{0, 0});
     // Every vertex and the centroid must land on a set cell.
     for (const Vec2crd& p : triangle.points) {
-        CHECK(mask.get(int((p.x() - mask.origin().x()) / pitch), int((p.y() - mask.origin().y()) / pitch)));
+        CHECK(mask.get(
+            int((p.x() - mask.origin().x()) / pitch),
+            int((p.y() - mask.origin().y()) / pitch)
+        ));
     }
     const double real_area{std::abs(triangle.area()) / double(pitch) / double(pitch)};
     CHECK(double(mask.count()) >= real_area);
@@ -152,7 +163,9 @@ TEST_CASE("Pixel grid arrange snaps every translation to whole pixels", "[Arrang
         }
         std::vector<ArrangeItem> items{to_arrange_items(shapes, settings)};
         const BoundingBox2crd bed{scaled(Vec2d{0., 0.}), scaled(Vec2d{160., 100.})};
-        const std::optional<ArrangeResult> result{arrange(bed_points(bed), items, {}, settings, never_stop)};
+        const std::optional<ArrangeResult> result{
+            arrange(bed_points(bed), items, {}, settings, never_stop)
+        };
         REQUIRE(result);
         CHECK(result->not_packed.empty());
         CHECK(is_collision_free(result->packed));
@@ -166,27 +179,39 @@ TEST_CASE("Pixel grid arrange snaps every translation to whole pixels", "[Arrang
 TEST_CASE("Pixel grid arrange turns items to their minimum footprint", "[Arrange][PixelGrid]")
 {
     const Settings settings{pixel_settings(0.1)};
-    std::vector<ArrangeItem> items{to_arrange_items({rectangle(40., 5., {}, std::numbers::pi / 6.)}, settings)};
+    std::vector<ArrangeItem> items{
+        to_arrange_items({rectangle(40., 5., {}, std::numbers::pi / 6.)}, settings)
+    };
     const BoundingBox2crd bed{scaled(Vec2d{0., 0.}), scaled(Vec2d{100., 100.})};
-    const std::optional<ArrangeResult> result{arrange(bed_points(bed), items, {}, settings, never_stop)};
+    const std::optional<ArrangeResult> result{
+        arrange(bed_points(bed), items, {}, settings, never_stop)
+    };
     REQUIRE(result);
     REQUIRE(result->packed.size() == 1);
 
-    const Vec2crd sizes{Slic3r::Biz::Algorithms::BoundingBox::sizes(result->packed.front().fixed_shape().bounding_box())};
-    const double area{double(sizes.x()) * double(sizes.y()) / double(scaled(1.)) / double(scaled(1.))};
+    const Vec2crd sizes{Slic3r::Biz::Algorithms::BoundingBox::sizes(
+        result->packed.front().fixed_shape().bounding_box()
+    )};
+    const double area{
+        double(sizes.x()) * double(sizes.y()) / double(scaled(1.)) / double(scaled(1.))
+    };
     CHECK_THAT(area, Catch::Matchers::WithinRel(200., 0.01));
 }
 
 TEST_CASE("Pixel grid arrange fills the notch of concave items", "[Arrange][PixelGrid]")
 {
     Settings settings{pixel_settings(0.5)};
-    settings.fixed_geometry   = GeometryHandling::Arbitrary;
-    settings.movable_geometry = GeometryHandling::Arbitrary;
+    settings.fixed_geometry           = GeometryHandling::Arbitrary;
+    settings.movable_geometry         = GeometryHandling::Arbitrary;
     settings.pixel_grid_min_footprint = false;
 
-    std::vector<ArrangeItem> items{to_arrange_items({l_shape(60., 10.), rectangle(30., 30.)}, settings)};
+    std::vector<ArrangeItem> items{
+        to_arrange_items({l_shape(60., 10.), rectangle(30., 30.)}, settings)
+    };
     const BoundingBox2crd bed{scaled(Vec2d{0., 0.}), scaled(Vec2d{70., 70.})};
-    const std::optional<ArrangeResult> result{arrange(bed_points(bed), items, {}, settings, never_stop)};
+    const std::optional<ArrangeResult> result{
+        arrange(bed_points(bed), items, {}, settings, never_stop)
+    };
     REQUIRE(result);
     CHECK(result->packed.size() == 2);
     CHECK(is_collision_free(result->packed));
@@ -198,7 +223,9 @@ TEST_CASE("Pixel grid arrange reports items that do not fit", "[Arrange][PixelGr
     std::vector<InputShape> shapes(5, rectangle(45., 45.));
     std::vector<ArrangeItem> items{to_arrange_items(shapes, settings)};
     const BoundingBox2crd bed{scaled(Vec2d{0., 0.}), scaled(Vec2d{100., 100.})};
-    const std::optional<ArrangeResult> result{arrange(bed_points(bed), items, {}, settings, never_stop)};
+    const std::optional<ArrangeResult> result{
+        arrange(bed_points(bed), items, {}, settings, never_stop)
+    };
     REQUIRE(result);
     CHECK(result->packed.size() == 4);
     CHECK(result->not_packed.size() == 1);
@@ -207,10 +234,16 @@ TEST_CASE("Pixel grid arrange reports items that do not fit", "[Arrange][PixelGr
 TEST_CASE("Pixel grid arrange keeps away from fixed items", "[Arrange][PixelGrid]")
 {
     Settings settings{pixel_settings(0.5)};
-    const std::vector<ArrangeItem> fixed{to_arrange_items({rectangle(50., 50., {0., 0.})}, settings)};
-    std::vector<ArrangeItem> items{to_arrange_items({rectangle(40., 40.), rectangle(40., 40.)}, settings)};
+    const std::vector<ArrangeItem> fixed{
+        to_arrange_items({rectangle(50., 50., {0., 0.})}, settings)
+    };
+    std::vector<ArrangeItem> items{
+        to_arrange_items({rectangle(40., 40.), rectangle(40., 40.)}, settings)
+    };
     const BoundingBox2crd bed{scaled(Vec2d{0., 0.}), scaled(Vec2d{100., 100.})};
-    const std::optional<ArrangeResult> result{arrange(bed_points(bed), items, fixed, settings, never_stop)};
+    const std::optional<ArrangeResult> result{
+        arrange(bed_points(bed), items, fixed, settings, never_stop)
+    };
     REQUIRE(result);
     REQUIRE(result->packed.size() == 2);
 
@@ -223,9 +256,13 @@ TEST_CASE("Pixel grid arrange works with a shifted grid origin and bed", "[Arran
 {
     Settings settings{pixel_settings(0.05)};
     settings.pixel_grid_origin = Vec2d{0.02, 0.03};
-    std::vector<ArrangeItem> items{to_arrange_items({rectangle(10., 10.), rectangle(20., 7.)}, settings)};
+    std::vector<ArrangeItem> items{
+        to_arrange_items({rectangle(10., 10.), rectangle(20., 7.)}, settings)
+    };
     const BoundingBox2crd bed{scaled(Vec2d{0.91, 1.37}), scaled(Vec2d{50., 50.})};
-    const std::optional<ArrangeResult> result{arrange(bed_points(bed), items, {}, settings, never_stop)};
+    const std::optional<ArrangeResult> result{
+        arrange(bed_points(bed), items, {}, settings, never_stop)
+    };
     REQUIRE(result);
     REQUIRE(result->packed.size() == 2);
     CHECK(is_collision_free(result->packed));
@@ -242,7 +279,9 @@ TEST_CASE("Pixel grid arrange supports non square pixels", "[Arrange][PixelGrid]
     std::vector<InputShape> shapes(6, rectangle(12.3, 8.7, {1.111, 2.222}));
     std::vector<ArrangeItem> items{to_arrange_items(shapes, settings)};
     const BoundingBox2crd bed{scaled(Vec2d{0., 0.}), scaled(Vec2d{80., 60.})};
-    const std::optional<ArrangeResult> result{arrange(bed_points(bed), items, {}, settings, never_stop)};
+    const std::optional<ArrangeResult> result{
+        arrange(bed_points(bed), items, {}, settings, never_stop)
+    };
     REQUIRE(result);
     CHECK(result->packed.size() == 6);
     CHECK(is_collision_free(result->packed));
