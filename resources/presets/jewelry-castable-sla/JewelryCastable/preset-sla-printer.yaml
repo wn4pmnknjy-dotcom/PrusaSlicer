@@ -1,0 +1,64 @@
+# Typical mono LCD printers. Change display_* to match your screen, the pixel
+# grid arrange reads its pixel size from them.
+id: '*common_msla*'
+kind: sla_printer
+name: '*common_msla*'
+values:
+  default_sla_material_profile: Generic Castable Wax
+  default_sla_print_profile: 0.05 Castable Wax
+  display_mirror_x: '0'
+  display_mirror_y: '0'
+  display_orientation: landscape
+  elefant_foot_compensation: '0.1'
+  elefant_foot_min_width: '0.2'
+  gamma_correction: '1'
+  max_exposure_time: '120'
+  max_initial_exposure_time: '300'
+  min_exposure_time: '0.5'
+  min_initial_exposure_time: '1'
+  printer_correction: [1.0, 1.0]
+  printer_technology: SLA
+  printer_variant: default
+  relative_correction: [1.0, 1.0]
+  sla_archive_format: SL1
+  printer_notes: Don't remove the following keywords! They link the print and material profiles to this printer.\nPRINTER_VENDOR_JEWELRY_CASTABLE\n
+---
+id: msla2k
+kind: sla_printer
+name: Jewelry MSLA 2K
+condition: printer.model == "MSLA2K"
+inherits:
+- '*common_msla*'
+values:
+  # 89.6 x 56 mm screen, 2560x1600, 35 um pixels
+  bed_shape:
+  - 0x0
+  - 89.6x0
+  - 89.6x56
+  - 0x56
+  display_width: '89.6'
+  display_height: '56'
+  display_pixels_x: '2560'
+  display_pixels_y: '1600'
+  max_print_height: '120'
+  printer_model: MSLA2K
+---
+id: msla4k
+kind: sla_printer
+name: Jewelry MSLA 4K
+condition: printer.model == "MSLA4K"
+inherits:
+- '*common_msla*'
+values:
+  # 89.6 x 56 mm screen, 3840x2400, 23.3 um pixels
+  bed_shape:
+  - 0x0
+  - 89.6x0
+  - 89.6x56
+  - 0x56
+  display_width: '89.6'
+  display_height: '56'
+  display_pixels_x: '3840'
+  display_pixels_y: '2400'
+  max_print_height: '120'
+  printer_model: MSLA4K

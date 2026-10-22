@@ -1,9 +1,20 @@
-[{
-    "name": "Prusa FFF",
-    "description": "Prusa FFF printers",
-    "visibility": "",
-    "id": "prusa-research-fff",
-    "url": "http://localhost:8000/prusa-research-fff/",
-    "index_url": "http://localhost:8000/prusa-research-fff/vendor_indices.zip",
-    "selected": true
-}]
+[
+    {
+        "name": "Prusa FFF",
+        "description": "Prusa FFF printers",
+        "visibility": "",
+        "id": "prusa-research-fff",
+        "url": "http://localhost:8000/prusa-research-fff/",
+        "index_url": "http://localhost:8000/prusa-research-fff/vendor_indices.zip",
+        "selected": true
+    },
+    {
+        "name": "Jewelry Castable SLA",
+        "description": "Castable wax resin profiles for jewelry casting on 2K and 4K jewelry MSLA printers (89.6x56 mm screen)",
+        "visibility": "",
+        "id": "jewelry-castable-sla",
+        "url": "http://localhost:8000/jewelry-castable-sla/",
+        "index_url": "http://localhost:8000/jewelry-castable-sla/vendor_indices.zip",
+        "selected": true
+    }
+]

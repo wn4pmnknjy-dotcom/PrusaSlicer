@@ -1589,6 +1589,7 @@ if(SLIC3R_BUILD_TESTS)
             test/Slic3r/Biz/Yaml/YamlTests.cpp
             test/Slic3r/Biz/Preset/IO/HwConfigDefLoaderTests.cpp
             test/Slic3r/Biz/Preset/IO/PresetLoaderTests.cpp
+            test/Slic3r/Biz/Preset/IO/BundledPresetsTests.cpp
             test/Slic3r/Biz/Preset/IO/PresetMetadataLegacyLoaderTests.cpp
             test/Slic3r/Biz/Preset/PresetCollectionEvaluatorTests.cpp
             test/Slic3r/Biz/Preset/PresetEvaluatorTests.cpp

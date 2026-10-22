@@ -1,0 +1,76 @@
+# Supports for castable wax resin (lost wax casting of jewelry): thin, dense
+# branching needles with small contact points so they snap off cleanly and
+# leave little to burn out.
+id: '*castable_common*'
+kind: sla_print
+name: '*castable_common*'
+values:
+  compatible_printers_condition: printer_notes=~/.*PRINTER_VENDOR_JEWELRY_CASTABLE.*/
+  output_filename_format: '[input_filename_base].sl1'
+  slice_closing_radius: 0.005
+  hollowing_enable: 0
+  supports_enable: 1
+  support_tree_type: branching
+  support_points_density_relative: 130
+  support_object_elevation: 3.0
+  support_critical_angle: 40.0
+  support_max_bridge_length: 5.0
+  support_max_bridges_on_pillar: 2
+  support_pillar_connection_mode: dynamic
+  support_pillar_widening_factor: 0.2
+  support_small_pillar_diameter_percent: 50%
+  support_base_diameter: 2.0
+  support_base_height: 0.5
+  support_head_width: 1.0
+  branchingsupport_object_elevation: 3.0
+  branchingsupport_critical_angle: 40.0
+  branchingsupport_max_bridge_length: 5.0
+  branchingsupport_max_bridges_on_pillar: 2
+  branchingsupport_pillar_widening_factor: 0.2
+  branchingsupport_small_pillar_diameter_percent: 50%
+  branchingsupport_base_diameter: 2.0
+  branchingsupport_base_height: 0.5
+  branchingsupport_head_width: 1.0
+  pad_enable: 1
+  pad_wall_thickness: 1.0
+  pad_wall_height: 0.0
+  pad_brim_size: 1.0
+  pad_max_merge_distance: 30.0
+  pad_wall_slope: 45.0
+---
+id: Ek4n0yE5RZK9q2bCw7mXfA
+kind: sla_print
+inherits:
+- '*castable_common*'
+variants:
+- name: 0.03 Castable Wax Fine
+  id: 7rkvzDiVXVqBI2dwfvdl/A
+  values:
+    layer_height: 0.03
+    support_head_front_diameter: 0.25
+    support_head_penetration: 0.15
+    support_pillar_diameter: 0.6
+    branchingsupport_head_front_diameter: 0.25
+    branchingsupport_head_penetration: 0.15
+    branchingsupport_pillar_diameter: 0.6
+- name: 0.05 Castable Wax
+  id: yn2DiRp81ki4/ZR+7l2hTQ
+  values:
+    layer_height: 0.05
+    support_head_front_diameter: 0.3
+    support_head_penetration: 0.2
+    support_pillar_diameter: 0.8
+    branchingsupport_head_front_diameter: 0.3
+    branchingsupport_head_penetration: 0.2
+    branchingsupport_pillar_diameter: 0.8
+- name: 0.05 Castable Wax Heavy
+  id: kY+i/dd9Y4nBoW5uo6w0CQ
+  values:
+    layer_height: 0.05
+    support_points_density_relative: 160
+    support_head_front_diameter: 0.4
+    support_head_penetration: 0.25
+    support_pillar_diameter: 1.0
+    branchingsupport_head_front_diameter: 0.4
+    branchingsupport_head_penetration: 0.25
+    branchingsupport_pillar_diameter: 1.0
