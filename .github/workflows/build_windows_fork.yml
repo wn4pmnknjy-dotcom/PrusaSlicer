@@ -1,0 +1,74 @@
+name: Build Windows package (fork)
+
+# Self-contained Windows build that does not depend on Prusa's private
+# actions repository. Produces a zip with prusa-slicer.exe as an artifact.
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      # The runner ships MinGW and Strawberry Perl toolchains; with Ninja,
+      # CMake would pick up their gfortran (e.g. in Eigen) and fail to link.
+      - name: Remove MinGW toolchains from PATH
+        shell: pwsh
+        run: |
+          $clean = ($env:PATH -split ';' | Where-Object { $_ -match '(?i)\\Git\\' -or $_ -notmatch '(?i)mingw|strawberry|msys' }) -join ';'
+          "PATH=$clean" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Restore dependencies
+        id: deps-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: deps/build/destdir
+          key: win-deps-${{ hashFiles('deps/**') }}
+
+      - name: Build dependencies
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        shell: cmd
+        run: |
+          cmake -S deps -B deps/build -G Ninja -DCMAKE_BUILD_TYPE=Release -DDEP_DEBUG=OFF -DPrusaSlicer_deps_PACKAGE_EXCLUDES="OCCT|sentry"
+          cmake --build deps/build
+
+      - name: Save dependencies
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: deps/build/destdir
+          key: ${{ steps.deps-cache.outputs.cache-primary-key }}
+
+      - name: Build PrusaSlicer
+        shell: cmd
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DSLIC3R_BUILD_TESTS=OFF -DSLIC3R_ENABLE_FORMAT_STEP=OFF -DCMAKE_PREFIX_PATH="%GITHUB_WORKSPACE%/deps/build/destdir/usr/local"
+          cmake --build build
+
+      # The application looks for a 'resources' directory next to the executable.
+      - name: Package
+        shell: pwsh
+        run: |
+          $out = "dist/PrusaSlicer"
+          $bin = "build/src/slic3r-app-launcher"
+          New-Item -ItemType Directory -Force $out | Out-Null
+          Copy-Item "$bin/slic3r-app-launcher.exe" "$out/PrusaSlicer.exe"
+          Copy-Item "$bin/*.dll" $out
+          Copy-Item -Recurse resources "$out/resources"
+          Get-ChildItem $out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PrusaSlicer-windows-x64
+          path: dist/PrusaSlicer
+          retention-days: 30

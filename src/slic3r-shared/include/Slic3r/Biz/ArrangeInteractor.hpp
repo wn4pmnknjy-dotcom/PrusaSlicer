@@ -16,6 +16,8 @@ struct ArrangeBed
 {
     const Domain::BedInstance* bed_instance;
     double offset{};
+    // Size of one display pixel along the bed axes (mm), SLA printers only.
+    std::optional<Domain::Vec2d> pixel_size;
 };
 
 using ArrangeBeds = std::vector<ArrangeBed>;

@@ -1,0 +1,28 @@
+# Starting exposures for castable wax resin on mono LCD screens. Every resin
+# and screen differs: calibrate with a test print and adjust.
+id: Generic Castable Wax
+kind: sla_material
+values:
+  compatible_printers_condition: printer_notes=~/.*PRINTER_VENDOR_JEWELRY_CASTABLE.*/
+  material_vendor: Generic
+  material_type: Castable
+  material_colour: '#C0392B'
+  material_correction: [1.0, 1.0]
+  material_print_speed: slow
+  faded_layers: 6
+  use_tilt: [0, 0]
+variants:
+- condition: print.layer_height == 0.03
+  name: Generic Castable Wax @0.03
+  id: pr5Rucs9+WS7iX2nQogmzg
+  values:
+    initial_layer_height: 0.03
+    exposure_time: 2.5
+    initial_exposure_time: 35
+- condition: print.layer_height == 0.05
+  name: Generic Castable Wax @0.05
+  id: a9a4pwS2+fbazKE1hILt7w
+  values:
+    initial_layer_height: 0.05
+    exposure_time: 3.0
+    initial_exposure_time: 40

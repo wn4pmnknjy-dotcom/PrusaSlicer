@@ -7,6 +7,7 @@
 #include "Slic3r/Biz/Algorithms/Point.hpp"
 #include "Slic3r/Biz/Algorithms/ExPolygon.hpp"
 #include "Slic3r/Domain/ConfigDefsFDM.hpp"
+#include "Slic3r/Domain/ConfigDefsSLA.hpp"
 
 #include "Slic3r/Biz/Platform/JobManager/JobManager.hpp"
 #include "Slic3r/Biz/Platform/PlatformServices.hpp"
@@ -40,6 +41,7 @@ using Domain::ConfigContainer;
 using Domain::ConfigItem;
 using Domain::ConfigPack;
 using Domain::ConfigPackFDM;
+using Domain::ConfigPackSLA;
 using Domain::ConstModelInstanceList;
 using Domain::ElementRef;
 using Domain::ElementRefs;
@@ -399,6 +401,27 @@ WipeTowerPerBed get_wipe_towers_per_bed(
     return result;
 }
 
+// Pixel size along the bed X and Y axes. In portrait orientation the display is
+// turned by 90 degrees relative to the bed, see Sl1Rasterizer.
+std::optional<Vec2d> get_display_pixel_size(const ConfigPackSLA& config)
+{
+    const auto& items{config.sla_printer_settings.items};
+    double width{items.opt("display_width").get<double>()};
+    double height{items.opt("display_height").get<double>()};
+    int pixels_x{items.opt("display_pixels_x").get<int>()};
+    int pixels_y{items.opt("display_pixels_y").get<int>()};
+    if (items.opt("display_orientation").get<Domain::SLADisplayOrientation>()
+        == Domain::SLADisplayOrientation::sladoPortrait)
+    {
+        std::swap(width, height);
+        std::swap(pixels_x, pixels_y);
+    }
+    if (pixels_x <= 0 || pixels_y <= 0 || width <= 0. || height <= 0.) {
+        return std::nullopt;
+    }
+    return Vec2d{width / pixels_x, height / pixels_y};
+}
+
 ModelInstancesPerBed get_arrange_input_per_bed(
     const SelectionId project_id,
     const std::vector<BedToArrange>& beds,
@@ -433,6 +456,9 @@ ModelInstancesPerBed get_arrange_input_per_bed(
             std::max(extra_brim, arrangeable_brim),
             settings,
             workbench)};
+        if (std::holds_alternative<ConfigPackSLA>(config)) {
+            arrange_bed.pixel_size = get_display_pixel_size(std::get<ConfigPackSLA>(config));
+        }
 
         const Vec3d bed_translation{
             arrange_bed.bed_instance->transformation.get_matrix().translation()};
@@ -543,6 +569,17 @@ std::optional<PackingResult> pack_to_bed(
         }
 
         const Points bed_contour{get_bed_contour(arrange_bed, settings)};
+        if (settings.strategy == Arrange::Strategy::PixelGrid) {
+            if (arrange_bed.pixel_size) {
+                // Anchor the pixel grid at the corner of the unshrunk bed, where the display starts.
+                settings.unscaled_pixel_width  = arrange_bed.pixel_size->x();
+                settings.unscaled_pixel_height = arrange_bed.pixel_size->y();
+                settings.pixel_grid_origin =
+                    BB::construct(arrange_bed.bed_instance->bed.get().contour()).min;
+            } else {
+                settings.strategy = Arrange::Strategy::Overfit;
+            }
+        }
 
         std::vector<ArrangeItem> to_pack_with_tower{};
         std::vector<ArrangeItem> fixed_with_tower{};

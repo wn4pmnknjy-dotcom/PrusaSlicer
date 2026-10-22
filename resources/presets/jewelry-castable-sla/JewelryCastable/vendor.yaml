@@ -1,0 +1,51 @@
+kind: vendor
+id: JewelryCastable
+name: Jewelry Castable SLA
+version: 1.0.0
+features:
+  printer: {}
+  tool: {}
+---
+kind: printer
+technology: SLA
+id: msla2k
+name: Jewelry MSLA 2K (89.6x56)
+model:
+  base_model: MSLA
+  model: MSLA2K
+tool_count: 1
+---
+kind: printer
+technology: SLA
+id: msla4k
+name: Jewelry MSLA 4K (89.6x56)
+model:
+  base_model: MSLA
+  model: MSLA4K
+tool_count: 1
+---
+kind: tool
+technology: SLA
+name: SLA default
+id: sla_default
+---
+kind: sheet
+name: SLA default
+id: sla_default
+type: ''
+---
+kind: printer_config
+id: msla2k
+printer: msla2k
+name: Jewelry MSLA 2K
+tools:
+- tool: sla_default
+sheet: sla_default
+---
+kind: printer_config
+id: msla4k
+printer: msla4k
+name: Jewelry MSLA 4K
+tools:
+- tool: sla_default
+sheet: sla_default

@@ -32,6 +32,8 @@ add_library(slic3r-biz-arrange
     src/Slic3r/Biz/Arrange/Utils.cpp
     include/Slic3r/Biz/Arrange/Arrange.hpp
     src/Slic3r/Biz/Arrange/Arrange.cpp
+    include/Slic3r/Biz/Arrange/PixelGrid.hpp
+    src/Slic3r/Biz/Arrange/PixelGrid.cpp
 
     src/Slic3r/Biz/Arrange/EdgeCache.hpp
     src/Slic3r/Biz/Arrange/EdgeCache.cpp
@@ -56,6 +58,7 @@ if(SLIC3R_BUILD_TESTS)
         test/Slic3r/Biz/Arrange/PackerTests.cpp
         test/Slic3r/Biz/Arrange/BedTests.cpp
         test/Slic3r/Biz/Arrange/ArrangeTests.cpp
+        test/Slic3r/Biz/Arrange/PixelGridTests.cpp
 
     )
     target_include_directories(slic3r-biz-arrange-tests PRIVATE test)
