@@ -2,9 +2,14 @@ name: STL 像素锁格阵列工具 (Windows exe)
 
 on:
   push:
+    branches:
+      - '**'
     paths:
       - 'tools/pixel_array/**'
       - '.github/workflows/pixel_array_exe.yml'
+  pull_request:
+    paths:
+      - 'tools/pixel_array/**'
   workflow_dispatch:
 
 jobs:
