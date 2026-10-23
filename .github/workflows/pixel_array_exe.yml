@@ -1,0 +1,50 @@
+name: STL 像素锁格阵列工具 (Windows exe)
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'tools/pixel_array/**'
+      - '.github/workflows/pixel_array_exe.yml'
+  pull_request:
+    paths:
+      - 'tools/pixel_array/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: tools/pixel_array
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            tools/pixel_array
+            .github
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller pytest
+      - name: 测试
+        run: python -m pytest -q tests
+      - name: 打包 exe
+        run: >
+          pyinstaller --noconfirm --onefile --windowed --name PixelArray
+          --exclude-module tkinter --exclude-module matplotlib
+          main.py
+      - name: 自检 exe
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath dist\PixelArray.exe -ArgumentList '--selftest' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "selftest failed: $($p.ExitCode)" }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PixelArray-windows
+          path: tools/pixel_array/dist/PixelArray.exe
+          retention-days: 30
